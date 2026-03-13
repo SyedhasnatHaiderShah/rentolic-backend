@@ -27,21 +27,19 @@ public class AuthService : IAuthService
 
     public async Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest request)
     {
-        var users = await _unitOfWork.Repository<User>().FindAsync(u => u.Email == request.Email);
-        var user = users.FirstOrDefault();
+        // ⚡ Bolt: Use FirstOrDefaultAsync with predicate to avoid loading multiple users or list materialization
+        var user = await _unitOfWork.Repository<User>().FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             return ApiResponse<LoginResponse>.FailureResponse(new List<string> { "Invalid email or password" });
         }
 
+        // ⚡ Bolt: Fix N+1 query by batch fetching roles based on IDs from UserRoles
         var userRoles = await _unitOfWork.Repository<UserRole>().FindAsync(ur => ur.UserId == user.Id);
-        var roleNames = new List<string>();
-        foreach (var ur in userRoles)
-        {
-            var role = await _unitOfWork.Repository<Role>().GetByIdAsync(ur.RoleId);
-            if (role != null) roleNames.Add(role.Name);
-        }
+        var roleIds = userRoles.Select(ur => ur.RoleId).ToList();
+        var roles = await _unitOfWork.Repository<Role>().FindAsync(r => roleIds.Contains(r.Id));
+        var roleNames = roles.Select(r => r.Name).ToList();
 
         var token = GenerateJwtToken(user, roleNames);
         return ApiResponse<LoginResponse>.SuccessResponse(new LoginResponse { Token = token, User = _mapper.Map<UserDto>(user) });
@@ -49,14 +47,16 @@ public class AuthService : IAuthService
 
     public async Task<ApiResponse<UserDto>> RegisterAsync(RegisterRequest request)
     {
-        var existingUsers = await _unitOfWork.Repository<User>().FindAsync(u => u.Email == request.Email);
-        if (existingUsers.Any()) return ApiResponse<UserDto>.FailureResponse(new List<string> { "Email already exists" });
+        // ⚡ Bolt: Use AnyAsync for O(1) existence check in SQL (EXISTS) instead of loading matching entities
+        if (await _unitOfWork.Repository<User>().AnyAsync(u => u.Email == request.Email))
+            return ApiResponse<UserDto>.FailureResponse(new List<string> { "Email already exists" });
 
         var user = new User { Email = request.Email, Name = request.Name, PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password), Status = UserStatus.ACTIVE };
         await _unitOfWork.Repository<User>().AddAsync(user);
 
-        var roles = await _unitOfWork.Repository<Role>().FindAsync(r => r.Name == request.Role);
-        var role = roles.FirstOrDefault() ?? (await _unitOfWork.Repository<Role>().FindAsync(r => r.Name == "TENANT")).FirstOrDefault();
+        // ⚡ Bolt: Use FirstOrDefaultAsync to fetch a single role directly
+        var role = await _unitOfWork.Repository<Role>().FirstOrDefaultAsync(r => r.Name == request.Role)
+                   ?? await _unitOfWork.Repository<Role>().FirstOrDefaultAsync(r => r.Name == "TENANT");
 
         if (role != null) await _unitOfWork.Repository<UserRole>().AddAsync(new UserRole { UserId = user.Id, RoleId = role.Id });
 

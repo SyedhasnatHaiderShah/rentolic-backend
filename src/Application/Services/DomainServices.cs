@@ -90,8 +90,9 @@ public class MaintenanceService : IMaintenanceService
         decimal score = 0;
 
         // Factor 1: Current workload (0-30 points)
-        var activeOrders = await _unitOfWork.Repository<IssueReport>().FindAsync(i => i.AssignedMaintenanceTeamId == teamId && i.Status != WorkOrderStatus.COMPLETED && i.Status != WorkOrderStatus.CANCELLED);
-        score += Math.Max(0, 30 - (activeOrders.Count() * 5));
+        // ⚡ Bolt: Use CountAsync to get count directly in SQL instead of materializing list
+        var activeCount = await _unitOfWork.Repository<IssueReport>().CountAsync(i => i.AssignedMaintenanceTeamId == teamId && i.Status != WorkOrderStatus.COMPLETED && i.Status != WorkOrderStatus.CANCELLED);
+        score += Math.Max(0, 30 - (activeCount * 5));
 
         // Factor 2: Specialty match (0-25 points)
         if (team.Specialties != null && team.Specialties.Contains(issue.Category)) score += 25;
