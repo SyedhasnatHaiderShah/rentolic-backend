@@ -1,6 +1,7 @@
 using AutoMapper;
 using Rentolic.Application.DTOs;
 using Rentolic.Domain.Entities;
+using Rentolic.Domain.Enums;
 
 namespace Rentolic.Application.Mapping;
 
@@ -31,5 +32,11 @@ public class MappingProfile : AutoMapper.Profile
         CreateMap<ServiceListing, ServiceListingDto>();
         CreateMap<ServiceBooking, ServiceBookingDto>();
         CreateMap<ServiceBookingDto, ServiceBooking>();
+
+        CreateMap<Notification, NotificationDto>();
+        CreateMap<Document, DocumentDto>();
+        CreateMap<Facility, FacilityDto>();
+        CreateMap<FacilityBooking, FacilityBookingDto>();
+        CreateMap<FacilityBookingDto, FacilityBooking>();
     }
 }

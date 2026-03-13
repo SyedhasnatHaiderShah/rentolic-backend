@@ -8,6 +8,7 @@ using Rentolic.Application.DTOs;
 using Rentolic.Application.Interfaces;
 using Rentolic.Domain.Entities;
 using Rentolic.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Rentolic.Infrastructure.Services;
 
@@ -34,7 +35,16 @@ public class AuthService : IAuthService
             return ApiResponse<LoginResponse>.FailureResponse(new List<string> { "Invalid email or password" });
         }
 
-        var token = GenerateJwtToken(user);
+        // Fetch roles for the user to include in the token
+        var userRoles = await _unitOfWork.Repository<UserRole>().FindAsync(ur => ur.UserId == user.Id);
+        var roleNames = new List<string>();
+        foreach (var ur in userRoles)
+        {
+            var role = await _unitOfWork.Repository<Role>().GetByIdAsync(ur.RoleId);
+            if (role != null) roleNames.Add(role.Name);
+        }
+
+        var token = GenerateJwtToken(user, roleNames);
         var userDto = _mapper.Map<UserDto>(user);
 
         return ApiResponse<LoginResponse>.SuccessResponse(new LoginResponse
@@ -86,7 +96,7 @@ public class AuthService : IAuthService
         return ApiResponse<UserDto>.SuccessResponse(userDto, "User registered successfully");
     }
 
-    private string GenerateJwtToken(User user)
+    private string GenerateJwtToken(User user, IEnumerable<string> roles)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtSecret = _configuration["Jwt:Key"];
@@ -95,13 +105,21 @@ public class AuthService : IAuthService
              jwtSecret = "default_development_key_for_rentolic_system_12345";
         }
         var key = Encoding.ASCII.GetBytes(jwtSecret);
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email)
+        };
+
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email)
-            }),
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = _configuration["Jwt:Issuer"],
