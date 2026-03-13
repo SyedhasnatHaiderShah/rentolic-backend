@@ -31,6 +31,21 @@ public class GenericRepository<T> : IRepository<T> where T : class
         return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
     }
 
+    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
+    }
+
+    public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbSet.AnyAsync(predicate);
+    }
+
+    public async Task<int> CountAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbSet.CountAsync(predicate);
+    }
+
     public async Task AddAsync(T entity)
     {
         await _dbSet.AddAsync(entity);

@@ -1,64 +1,21 @@
 namespace Rentolic.Domain.Enums;
 
-public enum UserStatus
-{
-    ACTIVE,
-    INACTIVE,
-    SUSPENDED,
-    DELETED
-}
-
-public enum UnitStatus
-{
-    VACANT,
-    OCCUPIED,
-    MAINTENANCE,
-    RESERVED
-}
-
-public enum LeaseStatus
-{
-    DRAFT,
-    ACTIVE,
-    EXPIRED,
-    TERMINATED,
-    PENDING
-}
-
-public enum RentFrequency
-{
-    MONTHLY,
-    QUARTERLY,
-    YEARLY
-}
-
-public enum InvoiceStatus
-{
-    OPEN,
-    PAID,
-    OVERDUE,
-    CANCELLED,
-    PARTIAL
-}
-
-public enum Priority
-{
-    LOW,
-    MEDIUM,
-    HIGH,
-    EMERGENCY
-}
-
-public enum WorkOrderStatus
-{
-    NEW,
-    ASSIGNED,
-    IN_PROGRESS,
-    PENDING_APPROVAL,
-    APPROVED,
-    REJECTED,
-    COMPLETED,
-    CANCELLED,
-    ON_HOLD,
-    BIDDING
-}
+public enum UserStatus { ACTIVE, INACTIVE, SUSPENDED, DELETED }
+public enum UnitStatus { VACANT, OCCUPIED, MAINTENANCE, RESERVED }
+public enum LeaseStatus { DRAFT, ACTIVE, EXPIRED, TERMINATED, PENDING }
+public enum RentFrequency { MONTHLY, QUARTERLY, YEARLY }
+public enum InvoiceStatus { OPEN, PAID, OVERDUE, CANCELLED, PARTIAL }
+public enum Priority { LOW, MEDIUM, HIGH, EMERGENCY }
+public enum WorkOrderStatus { NEW, ASSIGNED, IN_PROGRESS, PENDING_APPROVAL, APPROVED, REJECTED, COMPLETED, CANCELLED, ON_HOLD, BIDDING }
+public enum IncidentSeverity { LOW, MEDIUM, HIGH, CRITICAL }
+public enum NotificationType { ANNOUNCEMENT, PAYMENT_REMINDER, LEASE_RENEWAL, WORK_ORDER, INVOICE, MESSAGE }
+public enum DocumentCategory { LEASE_AGREEMENT, INVOICE, PAYMENT_PROOF, MAINTENANCE_REPORT, PROPERTY_DOCUMENT, INSURANCE, INSPECTION_REPORT, OTHER }
+public enum DeviceType { SMART_LOCK, THERMOSTAT, LIGHT, CAMERA, SWITCH, SENSOR }
+public enum DeviceStatus { ONLINE, OFFLINE, ERROR }
+public enum FacilityType { GYM, SWIMMING_POOL, MEETING_ROOM, PARTY_HALL, BBQ_AREA, TENNIS_COURT, BASKETBALL_COURT, PLAYGROUND, PARKING, STORAGE, ROOFTOP, GARDEN, SAUNA, LIBRARY, CO_WORKING, CINEMA, GAMES_ROOM, OTHER }
+public enum FacilityBookingStatus { PENDING, APPROVED, REJECTED, CHECKED_IN, COMPLETED, CANCELLED, NO_SHOW }
+public enum ChannelType { GENERAL, ANNOUNCEMENTS, MARKETPLACE, EVENTS, SUPPORT }
+public enum LeasePaymentStatus { PENDING, SUBMITTED, VALIDATED, PRESENTED, CLEARED, BOUNCED, REPLACED, OVERDUE, COMPLETED }
+public enum PaymentMethod { CHECK, BANK_TRANSFER, CASH, CREDIT_CARD, ONLINE, CARD, BANK }
+public enum PaymentProvider { STRIPE, BANK, CASH, OTHER }
+public enum PaymentStatus { PENDING, COMPLETED, FAILED, REFUNDED, CANCELLED }

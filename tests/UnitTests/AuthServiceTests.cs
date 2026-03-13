@@ -29,9 +29,17 @@ public class AuthServiceTests
     public async Task RegisterAsync_ShouldReturnSuccess_WhenUserDoesNotExist()
     {
         // Arrange
-        var request = new RegisterRequest { Email = "test@example.com", Password = "Password123", Name = "Test User" };
+        var request = new RegisterRequest { Email = "test@example.com", Password = "Password123", Name = "Test User", Role = "TENANT" };
+
         _unitOfWorkMock.Setup(u => u.Repository<User>().FindAsync(It.IsAny<Expression<Func<User, bool>>>()))
             .ReturnsAsync(new List<User>());
+
+        _unitOfWorkMock.Setup(u => u.Repository<Role>().FindAsync(It.IsAny<Expression<Func<Role, bool>>>()))
+            .ReturnsAsync(new List<Role> { new Role { Id = Guid.NewGuid(), Name = "TENANT" } });
+
+        _unitOfWorkMock.Setup(u => u.Repository<UserRole>().AddAsync(It.IsAny<UserRole>()))
+            .Returns(Task.CompletedTask);
+
         _unitOfWorkMock.Setup(u => u.SaveAsync()).ReturnsAsync(1);
 
         // Act
