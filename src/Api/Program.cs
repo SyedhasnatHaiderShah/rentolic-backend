@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using Rentolic.Api.Middleware;
 using Rentolic.Application.Interfaces;
 using Rentolic.Application.Mapping;
+using Rentolic.Application.Services;
 using Rentolic.Application.Validators;
 using Rentolic.Infrastructure.Persistence.DbContext;
 using Rentolic.Infrastructure.Persistence.Repositories;
@@ -93,6 +94,12 @@ builder.Services.AddAuthentication(x =>
 // Dependency Injection
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPropertyService, PropertyService>();
+builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
+builder.Services.AddScoped<IFinanceService, FinanceService>();
+builder.Services.AddScoped<ILeaseService, LeaseService>();
+builder.Services.AddScoped<ISecurityService, SecurityService>();
+builder.Services.AddScoped<IServiceProviderService, ServiceProviderService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
 var app = builder.Build();
