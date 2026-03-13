@@ -2,6 +2,7 @@ using AutoMapper;
 using Rentolic.Application.DTOs;
 using Rentolic.Application.Interfaces;
 using Rentolic.Domain.Entities;
+using Rentolic.Domain.Enums;
 
 namespace Rentolic.Application.Services;
 
@@ -51,6 +52,40 @@ public class FinanceService : IFinanceService
     public async Task<ApiResponse<bool>> SendLeasePaymentRemindersAsync()
     {
         return ApiResponse<bool>.SuccessResponse(true, "Payment reminders sent");
+    }
+
+    public async Task<ApiResponse<int>> AutoGenerateMonthlyInvoicesAsync()
+    {
+        var leases = await _unitOfWork.Repository<Lease>().FindAsync(l => l.Status == LeaseStatus.ACTIVE);
+        int count = 0;
+        foreach (var lease in leases)
+        {
+            var invoice = new Invoice
+            {
+                LeaseId = lease.Id,
+                TenantUserId = lease.TenantUserId,
+                Amount = lease.RentAmount,
+                DueDate = DateTime.UtcNow.AddDays(7),
+                Number = $"INV-{Guid.NewGuid().ToString().Substring(0, 8)}",
+                Status = InvoiceStatus.OPEN
+            };
+            await _unitOfWork.Repository<Invoice>().AddAsync(invoice);
+            count++;
+        }
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<int>.SuccessResponse(count, $"{count} invoices generated");
+    }
+
+    public async Task<ApiResponse<bool>> CalculateLateFeesAsync()
+    {
+        var overdueInvoices = await _unitOfWork.Repository<Invoice>().FindAsync(i => i.Status == InvoiceStatus.OPEN && i.DueDate < DateTime.UtcNow);
+        foreach (var invoice in overdueInvoices)
+        {
+            invoice.Amount += 100; // Flat late fee of 100 AED
+            invoice.Status = InvoiceStatus.OVERDUE;
+        }
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "Late fees applied");
     }
 }
 

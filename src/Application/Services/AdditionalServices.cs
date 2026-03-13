@@ -81,4 +81,10 @@ public class ServiceProviderService : IServiceProviderService
     {
         return ApiResponse<bool>.SuccessResponse(true, "Payouts processed");
     }
+
+    public async Task<ApiResponse<IEnumerable<Guid>>> GetRecommendedServiceProvidersAsync(string category, Guid propertyId)
+    {
+        var providers = await _unitOfWork.Repository<ServiceListing>().FindAsync(sl => sl.Category == category && sl.Active == true);
+        return ApiResponse<IEnumerable<Guid>>.SuccessResponse(providers.Select(p => p.ProviderId).Take(5));
+    }
 }

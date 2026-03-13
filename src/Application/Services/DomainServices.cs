@@ -79,4 +79,53 @@ public class MaintenanceService : IMaintenanceService
     {
         return ApiResponse<PaymentIntentResponse>.SuccessResponse(new PaymentIntentResponse { ClientSecret = "cs_work", PaymentIntentId = "pi_work" });
     }
+
+    public async Task<ApiResponse<decimal>> CalculateAssignmentScoreAsync(Guid issueId, Guid teamId)
+    {
+        var issue = await _unitOfWork.Repository<IssueReport>().GetByIdAsync(issueId);
+        var team = await _unitOfWork.Repository<MaintenanceTeam>().GetByIdAsync(teamId);
+
+        if (issue == null || team == null) return ApiResponse<decimal>.FailureResponse(new List<string> { "Issue or Team not found" });
+
+        decimal score = 0;
+
+        // Factor 1: Current workload (0-30 points)
+        var activeOrders = await _unitOfWork.Repository<IssueReport>().FindAsync(i => i.AssignedMaintenanceTeamId == teamId && i.Status != WorkOrderStatus.COMPLETED && i.Status != WorkOrderStatus.CANCELLED);
+        score += Math.Max(0, 30 - (activeOrders.Count() * 5));
+
+        // Factor 2: Specialty match (0-25 points)
+        if (team.Specialties != null && team.Specialties.Contains(issue.Category)) score += 25;
+
+        // Factor 3: Average completion time (0-20 points) - Mocked logic
+        score += 15;
+
+        // Factor 4: Team rating (0-25 points) - Mocked logic
+        score += 20;
+
+        return ApiResponse<decimal>.SuccessResponse(score);
+    }
+
+    public async Task<ApiResponse<bool>> ApplyWorkOrderBusinessRulesAsync(Guid issueId)
+    {
+        var issue = await _unitOfWork.Repository<IssueReport>().GetByIdAsync(issueId);
+        if (issue == null) return ApiResponse<bool>.FailureResponse(new List<string> { "Issue not found" });
+
+        // Set SLA based on priority
+        int slaHours = issue.Priority switch
+        {
+            Priority.EMERGENCY => 4,
+            Priority.HIGH => 24,
+            Priority.MEDIUM => 72,
+            Priority.LOW => 168,
+            _ => 72
+        };
+        issue.SlaDueDate = issue.CreatedAt.AddHours(slaHours);
+
+        // Set approval status if cost estimate > 1000
+        if (issue.CostEstimate > 1000) issue.ApprovalStatus = "PENDING";
+        else issue.ApprovalStatus = "NOT_REQUIRED";
+
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "Business rules applied");
+    }
 }

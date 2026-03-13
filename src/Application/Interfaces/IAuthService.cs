@@ -14,4 +14,6 @@ public interface IAuthService
     Task<ApiResponse<bool>> ResetPasswordWithOtpAsync(string email, string newPassword);
     Task<ApiResponse<bool>> SendLoginOtpAsync(string emailOrPhone);
     Task<ApiResponse<LoginResponse>> VerifyLoginOtpAsync(OtpRequest request);
+    Task<ApiResponse<IEnumerable<string>>> GetUserPermissionsAsync(Guid userId);
+    Task<ApiResponse<bool>> UserHasPermissionAsync(Guid userId, string permissionCode);
 }

@@ -38,4 +38,7 @@ public class IssueReport : BaseEntity
     public bool IsEmergency { get; set; }
     public DateTime? ScheduledDate { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public DateTime? SlaDueDate { get; set; }
+    public decimal? AssignmentScore { get; set; }
+    public string? ApprovalStatus { get; set; } // NOT_REQUIRED, PENDING, APPROVED, REJECTED
 }

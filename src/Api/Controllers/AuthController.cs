@@ -64,8 +64,9 @@ public class AuthController : BaseApiController
     [HttpGet("permissions")]
     public async Task<ActionResult<ApiResponse<IEnumerable<string>>>> GetUserPermissions()
     {
-        // Placeholder for RBAC logic
-        return Ok(ApiResponse<IEnumerable<string>>.SuccessResponse(new List<string> { "VIEW_DASHBOARD", "MANAGE_PROPERTIES" }));
+        var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdStr, out var userId)) return BadRequest("Invalid user ID");
+        return HandleResult(await _authService.GetUserPermissionsAsync(userId));
     }
 
     [HttpPost("roles")]

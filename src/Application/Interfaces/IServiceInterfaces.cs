@@ -23,6 +23,8 @@ public interface IFinanceService
     Task<ApiResponse<bool>> ProcessStripeWebhookAsync(string payload, string signature);
     Task<ApiResponse<bool>> GeneratePaymentScheduleAsync(Guid leaseId);
     Task<ApiResponse<bool>> SendLeasePaymentRemindersAsync();
+    Task<ApiResponse<int>> AutoGenerateMonthlyInvoicesAsync();
+    Task<ApiResponse<bool>> CalculateLateFeesAsync();
 }
 
 public interface IMaintenanceService
@@ -31,4 +33,6 @@ public interface IMaintenanceService
     Task<ApiResponse<IssueReportDto>> CreateIssueReportAsync(IssueReportDto issueReportDto);
     Task<ApiResponse<bool>> ScheduleWorkAsync(Guid issueId, DateTime scheduledDate);
     Task<ApiResponse<PaymentIntentResponse>> CreateWorkOrderPaymentAsync(Guid issueId);
+    Task<ApiResponse<decimal>> CalculateAssignmentScoreAsync(Guid issueId, Guid teamId);
+    Task<ApiResponse<bool>> ApplyWorkOrderBusinessRulesAsync(Guid issueId);
 }

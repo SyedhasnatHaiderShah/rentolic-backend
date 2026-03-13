@@ -133,6 +133,18 @@ public class AuthService : IAuthService
         return ApiResponse<LoginResponse>.SuccessResponse(new LoginResponse { Token = "mock_token", User = _mapper.Map<UserDto>(user) });
     }
 
+    public async Task<ApiResponse<IEnumerable<string>>> GetUserPermissionsAsync(Guid userId)
+    {
+        // Mock permission logic based on documentation functions
+        return ApiResponse<IEnumerable<string>>.SuccessResponse(new List<string> { "VIEW_PROPERTIES", "CREATE_ISSUES" });
+    }
+
+    public async Task<ApiResponse<bool>> UserHasPermissionAsync(Guid userId, string permissionCode)
+    {
+        // Mock check logic
+        return ApiResponse<bool>.SuccessResponse(true);
+    }
+
     private string GenerateJwtToken(User user, IEnumerable<string> roles)
     {
         var jwtSecret = _configuration["Jwt:Key"] ?? "default_development_key_for_rentolic_system_12345";

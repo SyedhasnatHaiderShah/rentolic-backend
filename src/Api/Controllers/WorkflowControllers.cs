@@ -90,13 +90,12 @@ public class SystemController : BaseApiController
 
     public SystemController(ISystemTaskService systemTaskService)
     {
-        _systemTaskService = null!; // Placeholder
+        _systemTaskService = systemTaskService;
     }
 
     [HttpPost("extract-mrz")]
     public async Task<ActionResult<ApiResponse<MrzExtractionResponse>>> ExtractMrz(MrzExtractionRequest request)
     {
-        // Placeholder implementation
-        return Ok(ApiResponse<MrzExtractionResponse>.SuccessResponse(new MrzExtractionResponse { Success = true }));
+        return HandleResult(await _systemTaskService.ExtractMrzDataAsync(request));
     }
 }

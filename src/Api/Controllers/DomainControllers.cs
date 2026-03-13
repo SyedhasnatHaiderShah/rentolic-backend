@@ -46,6 +46,12 @@ public class MaintenanceController : BaseApiController
 
     [HttpPost("unit-code-email")]
     public ActionResult<ApiResponse<bool>> SendUnitCodeEmail(Guid unitId) => Ok(ApiResponse<bool>.SuccessResponse(true, "Unit code sent"));
+
+    [HttpGet("{id}/score/{teamId}")]
+    public async Task<ActionResult<ApiResponse<decimal>>> GetAssignmentScore(Guid id, Guid teamId) => HandleResult(await _maintenanceService.CalculateAssignmentScoreAsync(id, teamId));
+
+    [HttpPost("{id}/apply-rules")]
+    public async Task<ActionResult<ApiResponse<bool>>> ApplyRules(Guid id) => HandleResult(await _maintenanceService.ApplyWorkOrderBusinessRulesAsync(id));
 }
 
 public class LeasesController : BaseApiController
@@ -156,4 +162,7 @@ public class ServiceProvidersController : BaseApiController
     [HttpPost("payouts")]
     [Authorize(Roles = "PLATFORM_ADMIN")]
     public async Task<ActionResult<ApiResponse<bool>>> ProcessPayouts() => HandleResult(await _providerService.ProcessProviderPayoutsAsync());
+
+    [HttpGet("recommended")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<Guid>>>> GetRecommended(string category, Guid propertyId) => HandleResult(await _providerService.GetRecommendedServiceProvidersAsync(category, propertyId));
 }

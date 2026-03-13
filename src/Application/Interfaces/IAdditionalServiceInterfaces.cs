@@ -17,4 +17,5 @@ public interface IServiceProviderService
     Task<ApiResponse<ServiceBookingDto>> CreateBookingAsync(ServiceBookingDto bookingDto);
     Task<ApiResponse<PaymentIntentResponse>> CreateServiceBookingPaymentAsync(Guid bookingId);
     Task<ApiResponse<bool>> ProcessProviderPayoutsAsync();
+    Task<ApiResponse<IEnumerable<Guid>>> GetRecommendedServiceProvidersAsync(string category, Guid propertyId);
 }
