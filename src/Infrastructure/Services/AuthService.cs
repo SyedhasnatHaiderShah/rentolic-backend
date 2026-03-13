@@ -100,17 +100,32 @@ public class AuthService : IAuthService
 
     public async Task<ApiResponse<bool>> ValidatePasswordResetOtpAsync(OtpRequest request)
     {
+        // 🛡️ Sentinel: Mark the OTP as verified so it can be used for the reset step
         var otps = await _unitOfWork.Repository<OtpCode>().FindAsync(o => o.Email == request.Email && o.Code == request.Code && o.Type == "password_reset" && o.ExpiresAt > DateTime.UtcNow);
-        return ApiResponse<bool>.SuccessResponse(otps.Any(), otps.Any() ? "OTP validated" : "Invalid OTP");
+        var otp = otps.FirstOrDefault();
+        if (otp == null) return ApiResponse<bool>.FailureResponse(new List<string> { "Invalid or expired OTP" });
+
+        otp.VerifiedAt = DateTime.UtcNow;
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "OTP validated");
     }
 
     public async Task<ApiResponse<bool>> ResetPasswordWithOtpAsync(string email, string newPassword)
     {
+        // 🛡️ Sentinel: CRITICAL FIX - Verify that a valid OTP was actually verified for this email recently
+        var otps = await _unitOfWork.Repository<OtpCode>().FindAsync(o => o.Email == email && o.Type == "password_reset" && o.VerifiedAt != null && o.VerifiedAt > DateTime.UtcNow.AddMinutes(-10));
+        var otp = otps.FirstOrDefault();
+        if (otp == null) return ApiResponse<bool>.FailureResponse(new List<string> { "Unauthorized: OTP verification required" });
+
         var users = await _unitOfWork.Repository<User>().FindAsync(u => u.Email == email);
         var user = users.FirstOrDefault();
         if (user == null) return ApiResponse<bool>.FailureResponse(new List<string> { "User not found" });
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+        // 🛡️ Sentinel: Invalidate the OTP so it can't be used again
+        _unitOfWork.Repository<OtpCode>().Delete(otp);
+
         await _unitOfWork.SaveAsync();
         return ApiResponse<bool>.SuccessResponse(true, "Password reset successful");
     }
