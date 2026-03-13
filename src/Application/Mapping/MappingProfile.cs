@@ -1,5 +1,6 @@
 using AutoMapper;
 using Rentolic.Application.DTOs;
+using Rentolic.Application.Interfaces;
 using Rentolic.Domain.Entities;
 using Rentolic.Domain.Enums;
 
@@ -38,5 +39,8 @@ public class MappingProfile : AutoMapper.Profile
         CreateMap<Facility, FacilityDto>();
         CreateMap<FacilityBooking, FacilityBookingDto>();
         CreateMap<FacilityBookingDto, FacilityBooking>();
+
+        CreateMap<CommunityChannel, CommunityChannelDto>()
+            .ForMember(dest => dest.ChannelType, opt => opt.MapFrom(src => src.ChannelType.ToString()));
     }
 }

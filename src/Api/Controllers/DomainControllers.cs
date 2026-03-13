@@ -55,6 +55,18 @@ public class MaintenanceController : BaseApiController
     {
         return HandleResult(await _maintenanceService.CreateIssueReportAsync(issueReportDto));
     }
+
+    [HttpPost("schedule")]
+    public async Task<ActionResult<ApiResponse<bool>>> ScheduleWork(Guid issueId, DateTime scheduledDate)
+    {
+        return HandleResult(await _maintenanceService.ScheduleWorkAsync(issueId, scheduledDate));
+    }
+
+    [HttpPost("payment")]
+    public async Task<ActionResult<ApiResponse<PaymentIntentResponse>>> CreateWorkOrderPayment(Guid issueId)
+    {
+        return HandleResult(await _maintenanceService.CreateWorkOrderPaymentAsync(issueId));
+    }
 }
 
 public class LeasesController : BaseApiController
@@ -101,6 +113,35 @@ public class FinanceController : BaseApiController
     {
         return HandleResult(await _financeService.CreateInvoiceAsync(invoiceDto));
     }
+
+    [HttpPost("lease-payment/checkout")]
+    [Authorize(Roles = "TENANT")]
+    public async Task<ActionResult<ApiResponse<PaymentIntentResponse>>> CreateLeasePaymentCheckout(Guid paymentId)
+    {
+        return HandleResult(await _financeService.CreateLeasePaymentCheckoutAsync(paymentId));
+    }
+
+    [HttpPost("webhooks/stripe")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<bool>>> StripeWebhook()
+    {
+        // Payload extraction normally happens here
+        return HandleResult(await _financeService.ProcessStripeWebhookAsync("", ""));
+    }
+
+    [HttpPost("payment-schedule/{leaseId}")]
+    [Authorize(Roles = "LANDLORD,PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<bool>>> GeneratePaymentSchedule(Guid leaseId)
+    {
+        return HandleResult(await _financeService.GeneratePaymentScheduleAsync(leaseId));
+    }
+
+    [HttpPost("payment-reminders")]
+    [Authorize(Roles = "PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<bool>>> SendPaymentReminders()
+    {
+        return HandleResult(await _financeService.SendLeasePaymentRemindersAsync());
+    }
 }
 
 public class SecurityController : BaseApiController
@@ -129,6 +170,19 @@ public class SecurityController : BaseApiController
     {
         return HandleResult(await _securityService.GetIncidentsByPropertyAsync(propertyId));
     }
+
+    [HttpPost("permits/qr/generate")]
+    public async Task<ActionResult<ApiResponse<string>>> GeneratePermitQr(Guid permitId)
+    {
+        return HandleResult(await _securityService.GenerateVisitorQrAsync(permitId));
+    }
+
+    [HttpPost("permits/qr/validate")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<bool>>> ValidatePermitQr([FromBody] string qrCode)
+    {
+        return HandleResult(await _securityService.ValidateVisitorQrAsync(qrCode));
+    }
 }
 
 public class ServiceProvidersController : BaseApiController
@@ -150,5 +204,18 @@ public class ServiceProvidersController : BaseApiController
     public async Task<ActionResult<ApiResponse<ServiceBookingDto>>> CreateBooking(ServiceBookingDto bookingDto)
     {
         return HandleResult(await _providerService.CreateBookingAsync(bookingDto));
+    }
+
+    [HttpPost("booking/payment")]
+    public async Task<ActionResult<ApiResponse<PaymentIntentResponse>>> CreateBookingPayment(Guid bookingId)
+    {
+        return HandleResult(await _providerService.CreateServiceBookingPaymentAsync(bookingId));
+    }
+
+    [HttpPost("payouts")]
+    [Authorize(Roles = "PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<bool>>> ProcessPayouts()
+    {
+        return HandleResult(await _providerService.ProcessProviderPayoutsAsync());
     }
 }

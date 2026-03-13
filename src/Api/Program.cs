@@ -102,6 +102,10 @@ builder.Services.AddScoped<ISecurityService, SecurityService>();
 builder.Services.AddScoped<IServiceProviderService, ServiceProviderService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IFacilityService, FacilityService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ISmartHomeService, SmartHomeService>();
+builder.Services.AddScoped<ICommunityService, CommunityService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
 var app = builder.Build();

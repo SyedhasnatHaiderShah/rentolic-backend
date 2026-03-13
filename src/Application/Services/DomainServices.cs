@@ -2,6 +2,7 @@ using AutoMapper;
 using Rentolic.Application.DTOs;
 using Rentolic.Application.Interfaces;
 using Rentolic.Domain.Entities;
+using Rentolic.Domain.Enums;
 
 namespace Rentolic.Application.Services;
 
@@ -62,5 +63,20 @@ public class MaintenanceService : IMaintenanceService
         await _unitOfWork.Repository<IssueReport>().AddAsync(issue);
         await _unitOfWork.SaveAsync();
         return ApiResponse<IssueReportDto>.SuccessResponse(_mapper.Map<IssueReportDto>(issue), "Issue report created successfully");
+    }
+
+    public async Task<ApiResponse<bool>> ScheduleWorkAsync(Guid issueId, DateTime scheduledDate)
+    {
+        var issue = await _unitOfWork.Repository<IssueReport>().GetByIdAsync(issueId);
+        if (issue == null) return ApiResponse<bool>.FailureResponse(new List<string> { "Issue not found" });
+        issue.ScheduledDate = scheduledDate;
+        issue.Status = WorkOrderStatus.IN_PROGRESS;
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "Work scheduled");
+    }
+
+    public async Task<ApiResponse<PaymentIntentResponse>> CreateWorkOrderPaymentAsync(Guid issueId)
+    {
+        return ApiResponse<PaymentIntentResponse>.SuccessResponse(new PaymentIntentResponse { ClientSecret = "cs_work", PaymentIntentId = "pi_work" });
     }
 }

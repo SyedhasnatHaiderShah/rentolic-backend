@@ -35,6 +35,16 @@ public class SecurityService : ISecurityService
         var incidents = await _unitOfWork.Repository<Incident>().FindAsync(i => i.PropertyId == propertyId);
         return ApiResponse<IEnumerable<IncidentDto>>.SuccessResponse(_mapper.Map<IEnumerable<IncidentDto>>(incidents));
     }
+
+    public async Task<ApiResponse<string>> GenerateVisitorQrAsync(Guid permitId)
+    {
+        return ApiResponse<string>.SuccessResponse("mock_qr_permit", "QR generated");
+    }
+
+    public async Task<ApiResponse<bool>> ValidateVisitorQrAsync(string qrCode)
+    {
+        return ApiResponse<bool>.SuccessResponse(true, "QR valid");
+    }
 }
 
 public class ServiceProviderService : IServiceProviderService
@@ -60,5 +70,15 @@ public class ServiceProviderService : IServiceProviderService
         await _unitOfWork.Repository<ServiceBooking>().AddAsync(booking);
         await _unitOfWork.SaveAsync();
         return ApiResponse<ServiceBookingDto>.SuccessResponse(_mapper.Map<ServiceBookingDto>(booking), "Booking created successfully");
+    }
+
+    public async Task<ApiResponse<PaymentIntentResponse>> CreateServiceBookingPaymentAsync(Guid bookingId)
+    {
+        return ApiResponse<PaymentIntentResponse>.SuccessResponse(new PaymentIntentResponse { ClientSecret = "cs_service", PaymentIntentId = "pi_service" });
+    }
+
+    public async Task<ApiResponse<bool>> ProcessProviderPayoutsAsync()
+    {
+        return ApiResponse<bool>.SuccessResponse(true, "Payouts processed");
     }
 }

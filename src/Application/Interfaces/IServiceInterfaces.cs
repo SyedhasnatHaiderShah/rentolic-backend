@@ -19,10 +19,16 @@ public interface IFinanceService
 {
     Task<ApiResponse<IEnumerable<InvoiceDto>>> GetInvoicesByTenantAsync(Guid tenantId);
     Task<ApiResponse<InvoiceDto>> CreateInvoiceAsync(InvoiceDto invoiceDto);
+    Task<ApiResponse<PaymentIntentResponse>> CreateLeasePaymentCheckoutAsync(Guid paymentId);
+    Task<ApiResponse<bool>> ProcessStripeWebhookAsync(string payload, string signature);
+    Task<ApiResponse<bool>> GeneratePaymentScheduleAsync(Guid leaseId);
+    Task<ApiResponse<bool>> SendLeasePaymentRemindersAsync();
 }
 
 public interface IMaintenanceService
 {
     Task<ApiResponse<IEnumerable<IssueReportDto>>> GetIssuesByPropertyAsync(Guid propertyId);
     Task<ApiResponse<IssueReportDto>> CreateIssueReportAsync(IssueReportDto issueReportDto);
+    Task<ApiResponse<bool>> ScheduleWorkAsync(Guid issueId, DateTime scheduledDate);
+    Task<ApiResponse<PaymentIntentResponse>> CreateWorkOrderPaymentAsync(Guid issueId);
 }

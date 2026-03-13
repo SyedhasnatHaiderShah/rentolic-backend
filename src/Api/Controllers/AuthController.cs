@@ -16,15 +16,40 @@ public class AuthController : BaseApiController
 
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<ActionResult<ApiResponse<LoginResponse>>> Login(LoginRequest request)
-    {
-        return HandleResult(await _authService.LoginAsync(request));
-    }
+    public async Task<ActionResult<ApiResponse<LoginResponse>>> Login(LoginRequest request) => HandleResult(await _authService.LoginAsync(request));
 
     [HttpPost("register")]
+    [Authorize(Roles = "PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> Register(RegisterRequest request) => HandleResult(await _authService.RegisterAsync(request));
+
+    [HttpPost("signup")]
     [AllowAnonymous]
-    public async Task<ActionResult<ApiResponse<UserDto>>> Register(RegisterRequest request)
-    {
-        return HandleResult(await _authService.RegisterAsync(request));
-    }
+    public async Task<ActionResult<ApiResponse<UserDto>>> Signup(RegisterRequest request) => HandleResult(await _authService.SignupAsync(request));
+
+    [HttpPost("verify-email")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<bool>>> VerifyEmail(OtpRequest request) => HandleResult(await _authService.VerifyEmailAsync(request));
+
+    [HttpPost("send-verification-email")]
+    public async Task<ActionResult<ApiResponse<bool>>> SendVerificationEmail([FromBody] string email) => HandleResult(await _authService.SendVerificationEmailAsync(email));
+
+    [HttpPost("otp/password-reset/send")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<bool>>> SendPasswordResetOtp([FromBody] string email) => HandleResult(await _authService.SendPasswordResetOtpAsync(email));
+
+    [HttpPost("otp/password-reset/validate")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<bool>>> ValidatePasswordResetOtp(OtpRequest request) => HandleResult(await _authService.ValidatePasswordResetOtpAsync(request));
+
+    [HttpPost("otp/password-reset/reset")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<bool>>> ResetPassword(string email, string newPassword) => HandleResult(await _authService.ResetPasswordWithOtpAsync(email, newPassword));
+
+    [HttpPost("otp/login/send")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<bool>>> SendLoginOtp([FromBody] string emailOrPhone) => HandleResult(await _authService.SendLoginOtpAsync(emailOrPhone));
+
+    [HttpPost("otp/login/verify")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<LoginResponse>>> VerifyLoginOtp(OtpRequest request) => HandleResult(await _authService.VerifyLoginOtpAsync(request));
 }

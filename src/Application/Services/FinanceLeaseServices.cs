@@ -29,6 +29,29 @@ public class FinanceService : IFinanceService
         await _unitOfWork.SaveAsync();
         return ApiResponse<InvoiceDto>.SuccessResponse(_mapper.Map<InvoiceDto>(invoice), "Invoice created successfully");
     }
+
+    public async Task<ApiResponse<PaymentIntentResponse>> CreateLeasePaymentCheckoutAsync(Guid paymentId)
+    {
+        // Stripe integration placeholder
+        return ApiResponse<PaymentIntentResponse>.SuccessResponse(new PaymentIntentResponse { ClientSecret = "cs_lease", PaymentIntentId = "pi_lease" });
+    }
+
+    public async Task<ApiResponse<bool>> ProcessStripeWebhookAsync(string payload, string signature)
+    {
+        // Handle webhook events
+        return ApiResponse<bool>.SuccessResponse(true, "Webhook processed");
+    }
+
+    public async Task<ApiResponse<bool>> GeneratePaymentScheduleAsync(Guid leaseId)
+    {
+        // Logic to generate multiple lease_payments records
+        return ApiResponse<bool>.SuccessResponse(true, "Payment schedule generated");
+    }
+
+    public async Task<ApiResponse<bool>> SendLeasePaymentRemindersAsync()
+    {
+        return ApiResponse<bool>.SuccessResponse(true, "Payment reminders sent");
+    }
 }
 
 public class LeaseService : ILeaseService

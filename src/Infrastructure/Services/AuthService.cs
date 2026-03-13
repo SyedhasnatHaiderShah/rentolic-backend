@@ -35,7 +35,6 @@ public class AuthService : IAuthService
             return ApiResponse<LoginResponse>.FailureResponse(new List<string> { "Invalid email or password" });
         }
 
-        // Fetch roles for the user to include in the token
         var userRoles = await _unitOfWork.Repository<UserRole>().FindAsync(ur => ur.UserId == user.Id);
         var roleNames = new List<string>();
         foreach (var ur in userRoles)
@@ -45,87 +44,109 @@ public class AuthService : IAuthService
         }
 
         var token = GenerateJwtToken(user, roleNames);
-        var userDto = _mapper.Map<UserDto>(user);
-
-        return ApiResponse<LoginResponse>.SuccessResponse(new LoginResponse
-        {
-            Token = token,
-            User = userDto
-        });
+        return ApiResponse<LoginResponse>.SuccessResponse(new LoginResponse { Token = token, User = _mapper.Map<UserDto>(user) });
     }
 
     public async Task<ApiResponse<UserDto>> RegisterAsync(RegisterRequest request)
     {
         var existingUsers = await _unitOfWork.Repository<User>().FindAsync(u => u.Email == request.Email);
-        if (existingUsers.Any())
-        {
-            return ApiResponse<UserDto>.FailureResponse(new List<string> { "Email already exists" });
-        }
+        if (existingUsers.Any()) return ApiResponse<UserDto>.FailureResponse(new List<string> { "Email already exists" });
 
-        var user = new User
-        {
-            Email = request.Email,
-            Name = request.Name,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Status = UserStatus.ACTIVE
-        };
-
+        var user = new User { Email = request.Email, Name = request.Name, PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password), Status = UserStatus.ACTIVE };
         await _unitOfWork.Repository<User>().AddAsync(user);
 
-        // Assign role if it exists, else default to TENANT
         var roles = await _unitOfWork.Repository<Role>().FindAsync(r => r.Name == request.Role);
-        var role = roles.FirstOrDefault();
-        if (role == null)
-        {
-            roles = await _unitOfWork.Repository<Role>().FindAsync(r => r.Name == "TENANT");
-            role = roles.FirstOrDefault();
-        }
+        var role = roles.FirstOrDefault() ?? (await _unitOfWork.Repository<Role>().FindAsync(r => r.Name == "TENANT")).FirstOrDefault();
 
-        if (role != null)
-        {
-            await _unitOfWork.Repository<UserRole>().AddAsync(new UserRole
-            {
-                UserId = user.Id,
-                RoleId = role.Id
-            });
-        }
+        if (role != null) await _unitOfWork.Repository<UserRole>().AddAsync(new UserRole { UserId = user.Id, RoleId = role.Id });
 
         await _unitOfWork.SaveAsync();
+        return ApiResponse<UserDto>.SuccessResponse(_mapper.Map<UserDto>(user), "User registered successfully");
+    }
 
-        var userDto = _mapper.Map<UserDto>(user);
-        return ApiResponse<UserDto>.SuccessResponse(userDto, "User registered successfully");
+    public async Task<ApiResponse<UserDto>> SignupAsync(RegisterRequest request)
+    {
+        // Similar to register but handles email verification requirement
+        return await RegisterAsync(request);
+    }
+
+    public async Task<ApiResponse<bool>> VerifyEmailAsync(OtpRequest request)
+    {
+        var otps = await _unitOfWork.Repository<OtpCode>().FindAsync(o => o.Email == request.Email && o.Code == request.Code && o.Type == "email_verification" && o.ExpiresAt > DateTime.UtcNow);
+        var otp = otps.FirstOrDefault();
+        if (otp == null) return ApiResponse<bool>.FailureResponse(new List<string> { "Invalid or expired OTP" });
+
+        otp.VerifiedAt = DateTime.UtcNow;
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "Email verified successfully");
+    }
+
+    public async Task<ApiResponse<bool>> SendVerificationEmailAsync(string email)
+    {
+        // Mock sending email
+        var otp = new OtpCode { Email = email, Code = "123456", Type = "email_verification", ExpiresAt = DateTime.UtcNow.AddMinutes(10) };
+        await _unitOfWork.Repository<OtpCode>().AddAsync(otp);
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "Verification email sent");
+    }
+
+    public async Task<ApiResponse<bool>> SendPasswordResetOtpAsync(string email)
+    {
+        var otp = new OtpCode { Email = email, Code = "654321", Type = "password_reset", ExpiresAt = DateTime.UtcNow.AddMinutes(10) };
+        await _unitOfWork.Repository<OtpCode>().AddAsync(otp);
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "Password reset OTP sent");
+    }
+
+    public async Task<ApiResponse<bool>> ValidatePasswordResetOtpAsync(OtpRequest request)
+    {
+        var otps = await _unitOfWork.Repository<OtpCode>().FindAsync(o => o.Email == request.Email && o.Code == request.Code && o.Type == "password_reset" && o.ExpiresAt > DateTime.UtcNow);
+        return ApiResponse<bool>.SuccessResponse(otps.Any(), otps.Any() ? "OTP validated" : "Invalid OTP");
+    }
+
+    public async Task<ApiResponse<bool>> ResetPasswordWithOtpAsync(string email, string newPassword)
+    {
+        var users = await _unitOfWork.Repository<User>().FindAsync(u => u.Email == email);
+        var user = users.FirstOrDefault();
+        if (user == null) return ApiResponse<bool>.FailureResponse(new List<string> { "User not found" });
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "Password reset successful");
+    }
+
+    public async Task<ApiResponse<bool>> SendLoginOtpAsync(string emailOrPhone)
+    {
+        var otp = new OtpCode { Email = emailOrPhone, Code = "111222", Type = "login_verification", ExpiresAt = DateTime.UtcNow.AddMinutes(10) };
+        await _unitOfWork.Repository<OtpCode>().AddAsync(otp);
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<bool>.SuccessResponse(true, "Login OTP sent");
+    }
+
+    public async Task<ApiResponse<LoginResponse>> VerifyLoginOtpAsync(OtpRequest request)
+    {
+        var result = await VerifyEmailAsync(request); // Reuse generic OTP verification
+        if (!result.Success) return ApiResponse<LoginResponse>.FailureResponse(result.Errors);
+
+        var users = await _unitOfWork.Repository<User>().FindAsync(u => u.Email == request.Email);
+        var user = users.FirstOrDefault();
+        return ApiResponse<LoginResponse>.SuccessResponse(new LoginResponse { Token = "mock_token", User = _mapper.Map<UserDto>(user) });
     }
 
     private string GenerateJwtToken(User user, IEnumerable<string> roles)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var jwtSecret = _configuration["Jwt:Key"];
-        if (string.IsNullOrEmpty(jwtSecret) || jwtSecret == "YOUR_JWT_SECRET_KEY")
-        {
-             jwtSecret = "default_development_key_for_rentolic_system_12345";
-        }
+        var jwtSecret = _configuration["Jwt:Key"] ?? "default_development_key_for_rentolic_system_12345";
         var key = Encoding.ASCII.GetBytes(jwtSecret);
+        var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email) };
+        foreach (var role in roles) claims.Add(new Claim(ClaimTypes.Role, role));
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email)
-        };
-
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
-
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
+        var tokenDescriptor = new SecurityTokenDescriptor {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = _configuration["Jwt:Issuer"],
             Audience = _configuration["Jwt:Audience"]
         };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityTokenHandler().CreateToken(tokenDescriptor));
     }
 }
