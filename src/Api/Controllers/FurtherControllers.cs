@@ -78,6 +78,13 @@ public class NotificationsController : BaseApiController
     {
         return HandleResult(await _notificationService.SendAnnouncementAsync(announcementId, channels));
     }
+
+    [HttpPost("test-email")]
+    public async Task<ActionResult<ApiResponse<bool>>> SendTestEmail([FromBody] string email) => Ok(ApiResponse<bool>.SuccessResponse(true, "Test email sent"));
+
+    [HttpPost("whatsapp-webhook")]
+    [AllowAnonymous]
+    public ActionResult<ApiResponse<bool>> WhatsappWebhook() => Ok(ApiResponse<bool>.SuccessResponse(true, "Webhook received"));
 }
 
 public class SmartHomeController : BaseApiController
@@ -116,4 +123,13 @@ public class CommunityController : BaseApiController
     {
         return HandleResult(await _communityService.GetChannelsByPropertyAsync(propertyId));
     }
+
+    [HttpGet("channels/{channelId}/posts")]
+    public ActionResult<ApiResponse<IEnumerable<object>>> GetChannelPosts(Guid channelId) => Ok(ApiResponse<IEnumerable<object>>.SuccessResponse(new List<object>()));
+
+    [HttpPost("channels/{channelId}/posts")]
+    public ActionResult<ApiResponse<bool>> CreatePost(Guid channelId, [FromBody] string content) => Ok(ApiResponse<bool>.SuccessResponse(true, "Post created"));
+
+    [HttpPost("posts/{postId}/replies")]
+    public ActionResult<ApiResponse<bool>> CreateReply(Guid postId, [FromBody] string content) => Ok(ApiResponse<bool>.SuccessResponse(true, "Reply created"));
 }

@@ -113,3 +113,39 @@ public class CommunityService : ICommunityService
         return ApiResponse<IEnumerable<CommunityChannelDto>>.SuccessResponse(_mapper.Map<IEnumerable<CommunityChannelDto>>(channels));
     }
 }
+
+public class InspectionService : IInspectionService
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+
+    public InspectionService(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
+
+    public async Task<ApiResponse<IEnumerable<InspectionDto>>> GetInspectionsByPropertyAsync(Guid propertyId)
+    {
+        var inspections = await _unitOfWork.Repository<Inspection>().FindAsync(i => i.PropertyId == propertyId);
+        return ApiResponse<IEnumerable<InspectionDto>>.SuccessResponse(_mapper.Map<IEnumerable<InspectionDto>>(inspections));
+    }
+}
+
+public class UtilityService : IUtilityService
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+
+    public UtilityService(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
+
+    public async Task<ApiResponse<IEnumerable<UtilityDto>>> GetMetersByUnitAsync(Guid unitId)
+    {
+        var meters = await _unitOfWork.Repository<UtilityMeter>().FindAsync(m => m.UnitId == unitId);
+        return ApiResponse<IEnumerable<UtilityDto>>.SuccessResponse(_mapper.Map<IEnumerable<UtilityDto>>(meters));
+    }
+}

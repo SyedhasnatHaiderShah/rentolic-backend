@@ -42,5 +42,10 @@ public class MappingProfile : AutoMapper.Profile
 
         CreateMap<CommunityChannel, CommunityChannelDto>()
             .ForMember(dest => dest.ChannelType, opt => opt.MapFrom(src => src.ChannelType.ToString()));
+
+        CreateMap<Inspection, InspectionDto>();
+        CreateMap<Subscription, SubscriptionDto>();
+        CreateMap<UtilityMeter, UtilityDto>();
+        CreateMap<MoveWorkflow, MoveWorkflowDto>();
     }
 }

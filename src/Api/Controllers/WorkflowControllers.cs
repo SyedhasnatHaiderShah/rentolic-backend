@@ -30,6 +30,34 @@ public class UsersController : BaseApiController
     {
         return HandleResult(await _userService.DeleteUserAsync(id));
     }
+
+    [HttpPost("maintenance")]
+    [Authorize(Roles = "LANDLORD,PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateMaintenanceUser(SubUserCreateRequest request)
+    {
+        return HandleResult(await _userService.CreateSubUserAsync(request, "MAINTENANCE"));
+    }
+
+    [HttpPost("security")]
+    [Authorize(Roles = "LANDLORD,PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateSecurityUser(SubUserCreateRequest request)
+    {
+        return HandleResult(await _userService.CreateSubUserAsync(request, "SECURITY"));
+    }
+
+    [HttpPost("service-provider")]
+    [Authorize(Roles = "PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateServiceProviderUser(SubUserCreateRequest request)
+    {
+        return HandleResult(await _userService.CreateSubUserAsync(request, "PROVIDER"));
+    }
+
+    [HttpPost("landlord-sub")]
+    [Authorize(Roles = "LANDLORD")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateLandlordSubUser(SubUserCreateRequest request)
+    {
+        return HandleResult(await _userService.CreateSubUserAsync(request, "LANDLORD"));
+    }
 }
 
 public class PaymentsController : BaseApiController

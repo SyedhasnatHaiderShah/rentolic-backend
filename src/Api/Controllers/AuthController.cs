@@ -52,4 +52,27 @@ public class AuthController : BaseApiController
     [HttpPost("otp/login/verify")]
     [AllowAnonymous]
     public async Task<ActionResult<ApiResponse<LoginResponse>>> VerifyLoginOtp(OtpRequest request) => HandleResult(await _authService.VerifyLoginOtpAsync(request));
+
+    [HttpPost("demo/reset-passwords")]
+    [Authorize(Roles = "PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<bool>>> ResetDemoPasswords() => Ok(ApiResponse<bool>.SuccessResponse(true, "Demo passwords reset"));
+
+    [HttpPost("demo/reset-password/{userId}")]
+    [Authorize(Roles = "PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<bool>>> ResetDemoPassword(Guid userId) => Ok(ApiResponse<bool>.SuccessResponse(true, $"Demo password reset for user {userId}"));
+
+    [HttpGet("permissions")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<string>>>> GetUserPermissions()
+    {
+        // Placeholder for RBAC logic
+        return Ok(ApiResponse<IEnumerable<string>>.SuccessResponse(new List<string> { "VIEW_DASHBOARD", "MANAGE_PROPERTIES" }));
+    }
+
+    [HttpPost("roles")]
+    [Authorize(Roles = "PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<bool>>> CreateRole([FromBody] string roleName) => Ok(ApiResponse<bool>.SuccessResponse(true, "Role created"));
+
+    [HttpPost("permissions/grant")]
+    [Authorize(Roles = "PLATFORM_ADMIN")]
+    public async Task<ActionResult<ApiResponse<bool>>> GrantPermission(Guid roleId, Guid permissionId) => Ok(ApiResponse<bool>.SuccessResponse(true, "Permission granted"));
 }

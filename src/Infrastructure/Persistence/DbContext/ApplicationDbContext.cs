@@ -43,6 +43,21 @@ public class ApplicationDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
     public DbSet<CommunityChannel> CommunityChannels => Set<CommunityChannel>();
+    public DbSet<Inspection> Inspections => Set<Inspection>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<UtilityMeter> UtilityMeters => Set<UtilityMeter>();
+    public DbSet<MoveWorkflow> MoveWorkflows => Set<MoveWorkflow>();
+    public DbSet<TenantProfile> TenantProfiles => Set<TenantProfile>();
+    public DbSet<LeasePaymentHistory> LeasePaymentHistories => Set<LeasePaymentHistory>();
+    public DbSet<WorkOrderPayment> WorkOrderPayments => Set<WorkOrderPayment>();
+    public DbSet<WorkOrderQuote> WorkOrderQuotes => Set<WorkOrderQuote>();
+    public DbSet<ChannelPost> ChannelPosts => Set<ChannelPost>();
+    public DbSet<PostReply> PostReplies => Set<PostReply>();
+    public DbSet<DirectMessage> DirectMessages => Set<DirectMessage>();
+    public DbSet<TenantApartmentAssignment> TenantApartmentAssignments => Set<TenantApartmentAssignment>();
+    public DbSet<LeaseDocument> LeaseDocuments => Set<LeaseDocument>();
+    public DbSet<InsurancePolicy> InsurancePolicies => Set<InsurancePolicy>();
+    public DbSet<TerminationRequest> TerminationRequests => Set<TerminationRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
