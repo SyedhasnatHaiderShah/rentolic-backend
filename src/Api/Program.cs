@@ -60,10 +60,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Authentication
 var jwtSecret = builder.Configuration["Jwt:Key"];
-if (string.IsNullOrEmpty(jwtSecret))
+if (string.IsNullOrEmpty(jwtSecret) || jwtSecret == "YOUR_JWT_SECRET_KEY")
 {
-    // In production, this should come from a secure vault.
-    jwtSecret = "super_secret_key_that_is_long_enough_123_fallback_do_not_use_in_prod";
+    if (builder.Environment.IsProduction())
+    {
+        throw new InvalidOperationException("JWT Secret Key is missing in production.");
+    }
+    jwtSecret = "default_development_key_for_rentolic_system_12345";
 }
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
