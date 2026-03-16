@@ -125,4 +125,25 @@ public class LeaseService : ILeaseService
         await _unitOfWork.SaveAsync();
         return ApiResponse<LeaseDto>.SuccessResponse(_mapper.Map<LeaseDto>(lease), "Lease created successfully");
     }
+
+    public async Task<ApiResponse<LeaseDto>> CreateTenantWithUnitAsync(RegisterRequest tenantRequest, Guid unitId)
+    {
+        // 1. Create Tenant User (simulated logic)
+        var user = new User { Email = tenantRequest.Email, Name = tenantRequest.Name, Status = UserStatus.ACTIVE };
+        await _unitOfWork.Repository<User>().AddAsync(user);
+
+        // 2. Create Lease
+        var lease = new Lease
+        {
+            UnitId = unitId,
+            TenantUserId = user.Id,
+            StartDate = DateTime.UtcNow,
+            EndDate = DateTime.UtcNow.AddYears(1),
+            Status = LeaseStatus.ACTIVE
+        };
+        await _unitOfWork.Repository<Lease>().AddAsync(lease);
+
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<LeaseDto>.SuccessResponse(new LeaseDto(), "Tenant and Lease created");
+    }
 }
