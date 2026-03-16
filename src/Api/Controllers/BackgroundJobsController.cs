@@ -18,7 +18,7 @@ public class BackgroundJobsController : BaseApiController
 
     [HttpPost("auto-process-payments")]
     [Authorize(Roles = "PLATFORM_ADMIN")]
-    public ActionResult<ApiResponse<bool>> AutoProcessPayments() => Ok(ApiResponse<bool>.SuccessResponse(true, "Job triggered"));
+    public async Task<ActionResult<ApiResponse<bool>>> AutoProcessPayments() => HandleResult(await _financeService.AutoProcessPaymentsAsync());
 
     [HttpPost("recurring-service-scheduler")]
     [Authorize(Roles = "PLATFORM_ADMIN")]
@@ -30,7 +30,7 @@ public class BackgroundJobsController : BaseApiController
 
     [HttpPost("calculate-commissions")]
     [Authorize(Roles = "PLATFORM_ADMIN")]
-    public ActionResult<ApiResponse<bool>> CalculateCommissions() => Ok(ApiResponse<bool>.SuccessResponse(true, "Job triggered"));
+    public async Task<ActionResult<ApiResponse<bool>>> CalculateCommissions() => HandleResult(await _financeService.CalculateCommissionsAsync());
 
     [HttpPost("lease-expiry-notifications")]
     [Authorize(Roles = "PLATFORM_ADMIN")]
