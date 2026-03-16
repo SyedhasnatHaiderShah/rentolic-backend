@@ -25,6 +25,8 @@ public interface IFinanceService
     Task<ApiResponse<bool>> SendLeasePaymentRemindersAsync();
     Task<ApiResponse<int>> AutoGenerateMonthlyInvoicesAsync();
     Task<ApiResponse<bool>> CalculateLateFeesAsync();
+    Task<ApiResponse<bool>> AutoProcessPaymentsAsync();
+    Task<ApiResponse<bool>> CalculateCommissionsAsync();
 }
 
 public interface IMaintenanceService

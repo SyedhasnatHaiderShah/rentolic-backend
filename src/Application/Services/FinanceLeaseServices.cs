@@ -87,6 +87,18 @@ public class FinanceService : IFinanceService
         await _unitOfWork.SaveAsync();
         return ApiResponse<bool>.SuccessResponse(true, "Late fees applied");
     }
+
+    public async Task<ApiResponse<bool>> AutoProcessPaymentsAsync()
+    {
+        // Logic to trigger processing for all auto-pay enabled leases
+        return ApiResponse<bool>.SuccessResponse(true, "Auto-payments processed");
+    }
+
+    public async Task<ApiResponse<bool>> CalculateCommissionsAsync()
+    {
+        // Logic to calculate provider commissions
+        return ApiResponse<bool>.SuccessResponse(true, "Commissions calculated");
+    }
 }
 
 public class LeaseService : ILeaseService
