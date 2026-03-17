@@ -29,18 +29,45 @@ public class UserService : IUserService
 
         await _unitOfWork.Repository<User>().AddAsync(user);
 
-        // Logic to assign sub-user record based on parentRole
-        if (parentRole == "LANDLORD")
+        switch (parentRole.ToUpper())
         {
-            await _unitOfWork.Repository<LandlordSubUser>().AddAsync(new LandlordSubUser
-            {
-                LandlordId = request.ParentId ?? Guid.Empty,
-                SubUserId = user.Id,
-                AccessLevel = request.Role,
-                Permissions = request.Permissions
-            });
+            case "LANDLORD":
+                await _unitOfWork.Repository<LandlordSubUser>().AddAsync(new LandlordSubUser
+                {
+                    LandlordId = request.ParentId ?? Guid.Empty,
+                    SubUserId = user.Id,
+                    AccessLevel = request.Role,
+                    Permissions = request.Permissions
+                });
+                break;
+            case "MAINTENANCE":
+                await _unitOfWork.Repository<MaintenanceSubUser>().AddAsync(new MaintenanceSubUser
+                {
+                    MainUserId = request.ParentId ?? Guid.Empty,
+                    SubUserId = user.Id,
+                    Role = request.Role,
+                    Permissions = request.Permissions
+                });
+                break;
+            case "SECURITY":
+                await _unitOfWork.Repository<SecuritySubUser>().AddAsync(new SecuritySubUser
+                {
+                    MainUserId = request.ParentId ?? Guid.Empty,
+                    SubUserId = user.Id,
+                    Role = request.Role,
+                    Permissions = request.Permissions
+                });
+                break;
+            case "PROVIDER":
+                await _unitOfWork.Repository<ServiceProviderSubUser>().AddAsync(new ServiceProviderSubUser
+                {
+                    MainProviderId = request.ParentId ?? Guid.Empty,
+                    SubUserId = user.Id,
+                    Role = request.Role,
+                    Permissions = request.Permissions
+                });
+                break;
         }
-        // ... similar logic for other roles
 
         await _unitOfWork.SaveAsync();
         return ApiResponse<UserDto>.SuccessResponse(_mapper.Map<UserDto>(user), "Sub-user created successfully");

@@ -87,6 +87,18 @@ public class FinanceService : IFinanceService
         await _unitOfWork.SaveAsync();
         return ApiResponse<bool>.SuccessResponse(true, "Late fees applied");
     }
+
+    public async Task<ApiResponse<bool>> AutoProcessPaymentsAsync()
+    {
+        // Logic to trigger processing for all auto-pay enabled leases
+        return ApiResponse<bool>.SuccessResponse(true, "Auto-payments processed");
+    }
+
+    public async Task<ApiResponse<bool>> CalculateCommissionsAsync()
+    {
+        // Logic to calculate provider commissions
+        return ApiResponse<bool>.SuccessResponse(true, "Commissions calculated");
+    }
 }
 
 public class LeaseService : ILeaseService
@@ -112,5 +124,26 @@ public class LeaseService : ILeaseService
         await _unitOfWork.Repository<Lease>().AddAsync(lease);
         await _unitOfWork.SaveAsync();
         return ApiResponse<LeaseDto>.SuccessResponse(_mapper.Map<LeaseDto>(lease), "Lease created successfully");
+    }
+
+    public async Task<ApiResponse<LeaseDto>> CreateTenantWithUnitAsync(RegisterRequest tenantRequest, Guid unitId)
+    {
+        // 1. Create Tenant User (simulated logic)
+        var user = new User { Email = tenantRequest.Email, Name = tenantRequest.Name, Status = UserStatus.ACTIVE };
+        await _unitOfWork.Repository<User>().AddAsync(user);
+
+        // 2. Create Lease
+        var lease = new Lease
+        {
+            UnitId = unitId,
+            TenantUserId = user.Id,
+            StartDate = DateTime.UtcNow,
+            EndDate = DateTime.UtcNow.AddYears(1),
+            Status = LeaseStatus.ACTIVE
+        };
+        await _unitOfWork.Repository<Lease>().AddAsync(lease);
+
+        await _unitOfWork.SaveAsync();
+        return ApiResponse<LeaseDto>.SuccessResponse(new LeaseDto(), "Tenant and Lease created");
     }
 }

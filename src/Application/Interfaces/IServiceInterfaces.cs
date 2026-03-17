@@ -13,6 +13,7 @@ public interface ILeaseService
 {
     Task<ApiResponse<IEnumerable<LeaseDto>>> GetLeasesByTenantAsync(Guid tenantId);
     Task<ApiResponse<LeaseDto>> CreateLeaseAsync(LeaseDto leaseDto);
+    Task<ApiResponse<LeaseDto>> CreateTenantWithUnitAsync(RegisterRequest tenantRequest, Guid unitId);
 }
 
 public interface IFinanceService
@@ -25,6 +26,8 @@ public interface IFinanceService
     Task<ApiResponse<bool>> SendLeasePaymentRemindersAsync();
     Task<ApiResponse<int>> AutoGenerateMonthlyInvoicesAsync();
     Task<ApiResponse<bool>> CalculateLateFeesAsync();
+    Task<ApiResponse<bool>> AutoProcessPaymentsAsync();
+    Task<ApiResponse<bool>> CalculateCommissionsAsync();
 }
 
 public interface IMaintenanceService
