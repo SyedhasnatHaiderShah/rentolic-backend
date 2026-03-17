@@ -66,6 +66,10 @@ public class LeasesController : BaseApiController
     [HttpPost]
     [Authorize(Roles = "PLATFORM_ADMIN,LANDLORD")]
     public async Task<ActionResult<ApiResponse<LeaseDto>>> CreateLease(LeaseDto leaseDto) => HandleResult(await _leaseService.CreateLeaseAsync(leaseDto));
+
+    [HttpPost("tenant-with-unit")]
+    [Authorize(Roles = "PLATFORM_ADMIN,LANDLORD")]
+    public async Task<ActionResult<ApiResponse<LeaseDto>>> CreateTenantWithUnit(RegisterRequest tenantRequest, Guid unitId) => HandleResult(await _leaseService.CreateTenantWithUnitAsync(tenantRequest, unitId));
 }
 
 public class FinanceController : BaseApiController
