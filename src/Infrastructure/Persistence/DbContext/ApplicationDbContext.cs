@@ -63,40 +63,6 @@ public class ApplicationDbContext : Microsoft.EntityFrameworkCore.DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Enum Conversions
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasIndex(e => e.Email).IsUnique();
-            entity.Property(e => e.Status).HasConversion<string>();
-        });
-
-        modelBuilder.Entity<Unit>(entity => entity.Property(e => e.Status).HasConversion<string>());
-        modelBuilder.Entity<Lease>(entity => {
-            entity.Property(e => e.Status).HasConversion<string>();
-            entity.Property(e => e.RentFrequency).HasConversion<string>();
-        });
-        modelBuilder.Entity<Invoice>(entity => entity.Property(e => e.Status).HasConversion<string>());
-        modelBuilder.Entity<IssueReport>(entity => {
-            entity.Property(e => e.Priority).HasConversion<string>();
-            entity.Property(e => e.Status).HasConversion<string>();
-        });
-        modelBuilder.Entity<Incident>(entity => entity.Property(e => e.Severity).HasConversion<string>());
-        modelBuilder.Entity<Device>(entity => {
-            entity.Property(e => e.Type).HasConversion<string>();
-            entity.Property(e => e.Status).HasConversion<string>();
-        });
-        modelBuilder.Entity<CommunityChannel>(entity => entity.Property(e => e.ChannelType).HasConversion<string>());
-
-        // RBAC Many-to-Many
-        modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.UserId, ur.RoleId });
-        modelBuilder.Entity<RolePermission>().HasKey(rp => new { rp.RoleId, rp.PermissionId });
-
-        // Relationships
-        modelBuilder.Entity<Lease>().HasOne(l => l.TenantUser).WithMany().HasForeignKey(l => l.TenantUserId);
-        modelBuilder.Entity<Lease>().HasOne(l => l.LandlordOrg).WithMany().HasForeignKey(l => l.LandlordOrgId);
-
-        // Profiles unique per user
-        modelBuilder.Entity<Profile>().HasIndex(p => p.UserId).IsUnique();
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }

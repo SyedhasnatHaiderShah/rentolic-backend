@@ -30,6 +30,7 @@ builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache(); // Default IDistributedCache implementation
 builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
