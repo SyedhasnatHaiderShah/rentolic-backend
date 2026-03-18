@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  rentolic-api:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Database=rentolic;Username=postgres;Password=postgres
+      - Jwt__Key=ThisIsAVerySecretKeyForDevelopmentPurposes12345
+      - Jwt__Issuer=Rentolic
+      - Jwt__Audience=RentolicUsers
+    depends_on:
+      - db
+
+  db:
+    image: postgis/postgis:15-3.3
+    environment:
+      - POSTGRES_DB=rentolic
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
