@@ -24,7 +24,8 @@ public class DocumentsController : BaseApiController
     }
 
     [HttpPost("upload")]
-    public async Task<ActionResult<ApiResponse<DocumentDto>>> UploadDocument([FromForm] IFormFile file, [FromForm] string title, [FromForm] Guid? propertyId)
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<ApiResponse<DocumentDto>>> UploadDocument(IFormFile file, [FromForm] string title, [FromForm] Guid? propertyId)
     {
         // Mock upload logic
         var doc = new DocumentDto { Id = Guid.NewGuid(), Title = title, FilePath = $"uploads/{file.FileName}" };
