@@ -140,8 +140,12 @@ public class AuthService : IAuthService
 
     public async Task<ApiResponse<LoginResponse>> VerifyLoginOtpAsync(OtpRequest request)
     {
-        var result = await VerifyEmailAsync(request); // Reuse generic OTP verification
-        if (!result.Success) return ApiResponse<LoginResponse>.FailureResponse(result.Errors);
+        // ⚡ Bolt: Fixed OTP type from email_verification to login_verification
+        var otps = await _unitOfWork.Repository<OtpCode>().FindAsync(o => o.Email == request.Email && o.Code == request.Code && o.Type == "login_verification" && o.ExpiresAt > DateTime.UtcNow);
+        var otp = otps.FirstOrDefault();
+        if (otp == null) return ApiResponse<LoginResponse>.FailureResponse(new List<string> { "Invalid or expired OTP" });
+
+        otp.VerifiedAt = DateTime.UtcNow;
 
         var users = await _unitOfWork.Repository<User>().FindAsync(u => u.Email == request.Email);
         var user = users.FirstOrDefault();

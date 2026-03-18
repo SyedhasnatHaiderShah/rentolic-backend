@@ -1,12 +1,12 @@
 # Rentolic Database Migration Audit
 ## Supabase → Standalone PostgreSQL for .NET Core 6 / Entity Framework Core
 
-**Version**: 1.0  
-**Date**: March 2026  
-**Tables**: 130+  
-**Enums**: 30  
-**Functions**: 40+  
-**Triggers**: 20+  
+**Version**: 1.0
+**Date**: March 2026
+**Tables**: 130+
+**Enums**: 30
+**Functions**: 40+
+**Triggers**: 20+
 
 > **Purpose**: This file contains the complete SQL migration script to recreate the entire Rentolic database schema in a standalone PostgreSQL instance, replacing all Supabase-specific constructs (`auth.users`, `auth.uid()`, RLS policies) with standard PostgreSQL patterns compatible with .NET Core 6 / Entity Framework Core.
 
@@ -3474,17 +3474,17 @@ public class RentolicDbContext : DbContext
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
-    
+
     // Properties
     public DbSet<Property> Properties { get; set; }
     public DbSet<Unit> Units { get; set; }
-    
+
     // Leases
     public DbSet<Lease> Leases { get; set; }
     public DbSet<LeasePayment> LeasePayments { get; set; }
-    
+
     // ... 120+ more DbSets
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Configure enum conversions
@@ -3492,11 +3492,11 @@ public class RentolicDbContext : DbContext
         modelBuilder.HasPostgresEnum<UnitStatus>();
         modelBuilder.HasPostgresEnum<LeaseStatus>();
         // ... all 30 enums
-        
+
         // Configure soft deletes
         modelBuilder.Entity<User>().HasQueryFilter(u => u.DeletedAt == null);
         modelBuilder.Entity<Property>().HasQueryFilter(p => p.DeletedAt == null);
-        
+
         // Unique constraints
         modelBuilder.Entity<UserRole>()
             .HasIndex(ur => new { ur.UserId, ur.RoleId }).IsUnique();
@@ -3527,7 +3527,7 @@ services.AddAuthorization(options =>
     options.AddPolicy("IsLandlord", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim("role", "LANDLORD")));
-    
+
     options.AddPolicy("CanManageProperty", policy =>
         policy.Requirements.Add(new PropertyOwnerRequirement()));
 });
